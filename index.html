@@ -71,13 +71,14 @@
 
         async function fetchData(searchTerm) {
             try {
-                const response = await fetch('/search', {
+                const response = await fetch('https://your-vercel-deployment-url.vercel.app/search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ srch: searchTerm })
                 });
+                
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
