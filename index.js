@@ -1,11 +1,12 @@
-const express = require('express');
-const app = express();
-const NodeCache = require('node-cache');
-// const fetch = require('node-fetch');
-const path = require('path');
-const bodyParser = require('body-parser');
+import express from 'express';
+import NodeCache from 'node-cache';
+import fetch from 'node-fetch';
+import path from 'path';
+import bodyParser from 'body-parser';
 
+const app = express();
 const nodeCache = new NodeCache();
+const __dirname = path.resolve();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
@@ -16,83 +17,51 @@ app.get('/', (req, res) => {
 });
 
 app.post('/search', async (req, res) => {
-
-
-    var apikey = "LIVDSRZULELA";
-    var lmt = 15;
-
-    // test search term
-    var search = req.body.srch;
-
-    // using default locale of en_US
-    var searchUrl = "https://g.tenor.com/v1/search?q=" + search+ "&key=" +
-            apikey + "&limit=" + lmt;
-
-            var url = `https://newsapi.org/v2/everything?q=${search}&language=en&from=2024-05-29&sortBy=publishedAt&apiKey=f777da2e89e34172a5b5a618873b6235`
-  
-  console.log('Request URL:', url); // Log the request URL for debugging
-  let ress
-  try {
-    let response = await fetch(url);
-     ress = await response.json();
-    console.log('Response Status:', response.status); // Log the response status
-    console.log('Response Data:', ress); 
-    if (ress.status === "error") {
-        console.error('API Error:', ress.message); // Log API error messages
-      } else if (ress.totalResults === 0) {
-        console.log('No results found.');
-      } else {
-        console.log(ress); // Process and log the articles if results are found
-      }
-    } catch (error) {
-      console.error('Fetch Error:', error); // Log any fetch errors
-    }
-      
-    // const search = req.body.srch;
+    const apikey = "LIVDSRZULELA";
+    const lmt = 15;
+    const search = req.body.srch;
 
     if (!search) {
         return res.status(400).json({ error: 'Search term is required' });
     }
 
-    // let searchUrl = `https://api.giphy.com/v1/gifs/search?api_key=8UFqMAK151oEP1kjwQ33AL3FcuzcjhHE&q=${search}&limit=15&offset=0&rating=g&lang=en&bundle=messaging_non_clips`;
+    const tenorUrl = `https://g.tenor.com/v1/search?q=${search}&key=${apikey}&limit=${lmt}`;
+    const newsUrl = `https://newsapi.org/v2/everything?q=${search}&language=en&from=2024-05-29&sortBy=publishedAt&apiKey=f777da2e89e34172a5b5a618873b6235`;
 
     try {
-        let result;
+        let gifsResponse = {};
+        let newsResponse = {};
 
-        // const NewsArt = await fetch(News)
-        // const News_res = await NewsArt.json()
-        // res.json(News_res)
-        
-
+        // Check cache for existing results
         if (nodeCache.has(search)) {
-            result = JSON.parse(nodeCache.get(search));
-            console.log("Retrieved from cache:");
-            const [News , Gifs] = [ress,result];
-            return res.json({
-                News : ress,
-                Gifs : result
-            })
-         
+            const cachedData = JSON.parse(nodeCache.get(search));
+            gifsResponse = cachedData.Gifs;
+            newsResponse = cachedData.News;
+            console.log("Retrieved from cache:", gifsResponse, newsResponse);
         } else {
-            const fetchResult = await fetch(searchUrl);
-            result = await fetchResult.json();
-            nodeCache.set(search, JSON.stringify(result));
-            console.log("New response:");
-            return res.json(result + ress);
+            // Fetch GIFs from Tenor API
+            const gifsResult = await fetch(tenorUrl);
+            gifsResponse = await gifsResult.json();
+
+            // Fetch news articles from News API
+            const newsResult = await fetch(newsUrl);
+            newsResponse = await newsResult.json();
+
+            // Cache the combined result for future requests
+            nodeCache.set(search, JSON.stringify({ Gifs: gifsResponse, News: newsResponse }));
+            console.log("New response:", gifsResponse, newsResponse);
         }
 
+        // Return combined response to client
+        return res.json({ Gifs: gifsResponse, News: newsResponse });
 
-        
-
-        
     } catch (error) {
         console.error("Error fetching data:", error);
-        res.status(500).json({ error: 'Failed to fetch data from Giphy API' });
+        res.status(500).json({ error: 'Failed to fetch data' });
     }
 });
 
-const PORT = 8000 || process.env.PORT ;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
