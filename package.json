@@ -1,0 +1,17 @@
+{
+  "name": "recommendation-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js" , "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-cache": "^5.1.2",
+    "node-fetch": "^3.3.2"
+  }
+}
