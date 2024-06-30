@@ -10,15 +10,7 @@ const __dirname = path.resolve();
 
 app.use(express.urlencoded({ extended: true }));
 // app.use(express.static(__dirname ));
-app.use(express.static(__dirname, {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-    }
-
-    
-}));
+app.use(express.static(__dirname));
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
