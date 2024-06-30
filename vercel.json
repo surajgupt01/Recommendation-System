@@ -9,7 +9,9 @@
 "rewrites": [{ "source": "/(.*)", "destination": "/index.js" }],
 
 "types" :{
-    "text/css css"
+
+    
+    
 }
 
 }
