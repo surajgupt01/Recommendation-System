@@ -16,6 +16,8 @@ app.use(express.static(__dirname, {
             res.setHeader('Content-Type', 'text/css');
         }
     }
+
+    
 }));
 app.use(bodyParser.json());
 
